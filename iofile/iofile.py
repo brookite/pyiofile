@@ -6,7 +6,7 @@ import stat
 import platform
 import time
 
-__VERSION__ = "1.0a.dev1"
+__VERSION__ = "1.0a.dev2"
 
 
 class Path(os.PathLike):
@@ -21,19 +21,23 @@ class Path(os.PathLike):
     or path-like object as a path
     Path() - sets as default the current working directory
 
+    expandvars - uses standard-library method os.path.expandvars
+
     Path attributes: name, size, last_access, last_modified, ctime, creation_time,
     path
 
     """
     _separator = os.sep
 
-    def __init__(self, *args):
+    def __init__(self, *args, expandvars=True):
         if len(args) == 0:
             args = [os.getcwd()]
         if str(args[0]).endswith(":"):
             args = list(args)
             args[0] = args[0] + self._separator
         self.__path = os.path.join(*args)
+        if expandvars:
+            self.__path = os.path.expandvars(self.__path)
 
     @staticmethod
     def separator():
@@ -409,6 +413,25 @@ class Path(os.PathLike):
         """
         return Path(os.path.splitdrive(self.get_absolute())[0])
 
+    def get_relative(self):
+        """
+        Returns relative path string of current path
+        """
+        return os.path.relpath(self.get_absolute())
+
+    def get_relative_path(self):
+        """
+        Returns relative path of current path
+        """
+        return Path(os.path.relpath(self.get_absolute()))
+
+    def norm_path(self):
+        """
+        Normalizes the path using standard-library method os.path.normcase
+        and os.path.normpath
+        """
+        return Path(os.path.normcase(os.path.normpath(self)))
+
     @staticmethod
     def list_roots():
         """
@@ -425,26 +448,30 @@ class Path(os.PathLike):
 
     @property
     def last_modified(self):
-        return os.path.getmtime(self.get_absolute())
+        if self.exists():
+            return os.path.getmtime(self.get_absolute())
 
     @property
     def last_access(self):
-        return os.path.getatime(self.get_absolute())
+        if self.exists():
+            return os.path.getatime(self.get_absolute())
 
     @property
     def ctime(self):
-        return os.path.getctime(self.get_absolute())
+        if self.exists():
+            return os.path.getctime(self.get_absolute())
 
     @property
     def creation_time(self):
-        if platform.system() == 'Windows':
-            return os.path.getctime(self)
-        else:
-            stat = os.stat(self)
-            try:
-                return stat.st_birthtime
-            except AttributeError:
-                return stat.st_mtime
+        if self.exists():
+            if platform.system() == 'Windows':
+                return os.path.getctime(self)
+            else:
+                stat = os.stat(self)
+                try:
+                    return stat.st_birthtime
+                except AttributeError:
+                    return stat.st_mtime
 
     def __len__(self):
         return self.size
@@ -505,11 +532,13 @@ class Path(os.PathLike):
 
     @property
     def name(self):
-        return os.path.split(self.get_absolute())[1]
+        if self.exists():
+            return os.path.split(self.get_absolute())[1]
 
     @property
     def size(self):
-        return os.stat(self.get_absolute()).st_size
+        if self.exists():
+            return os.stat(self.get_absolute()).st_size
 
     def mkdirs(self):
         """

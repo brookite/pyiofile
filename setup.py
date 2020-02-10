@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='iofile',
-      version='1.0a.dev1',
+      version='1.0a.dev2',
       description='Abstract representation of file and directory pathnames',
       long_description=open("README.rst").read(),
       classifiers=[
