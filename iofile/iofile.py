@@ -241,7 +241,12 @@ class Path(os.PathLike):
         so that only read operations are allowed for owners, group,
         others.
         """
-        self.chmod(0o444)
+        if platform.system() == "Windows":
+            import win32api
+            import win32con
+            win32api.SetFileAttributes(self.get_absolute(), win32con.FILE_ATTRIBUTE_READONLY)
+        else:
+            self.chmod(0o444)
 
     def chmod(self, *args, **kwargs):
         """
@@ -425,6 +430,39 @@ class Path(os.PathLike):
         """
         return Path(os.path.relpath(self.get_absolute()))
 
+    def is_hidden(self):
+        """
+        Tests whether the file named by this abstract pathname is a hidden file.
+        In UNIX systems checks if filename starts with "."
+        """
+        if platform.system() == 'Windows':
+            return bool(os.stat(self).st_file_attributes & stat.FILE_ATTRIBUTE_HIDDEN)
+        else:
+            return self.name.startswith(".")
+
+    def set_hidden(self, hidden):
+        """
+        Sets this path as hidden.
+        In UNIX systems adds "." to to the beginning of the filename
+        """
+        if platform.system() == 'Windows':
+            import win32api
+            import win32con
+            readonly = self.can_read()
+            if hidden:
+                flag = win32con.FILE_ATTRIBUTE_HIDDEN
+            else:
+                flag = win32con.FILE_ATTRIBUTE_NORMAL
+            win32api.SetFileAttributes(self.get_absolute(), flag)
+            if readonly:
+                self.set_readonly()
+        else:
+            if hidden:
+                self.rename("." + self.name)
+            else:
+                if self.name.startswith("."):
+                    self.rename(self.name[1:])
+
     def norm_path(self):
         """
         Normalizes the path using standard-library method os.path.normcase
@@ -438,8 +476,11 @@ class Path(os.PathLike):
         List the available filesystem roots.
         """
         if sys.platform == "win32":
-            letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-            return [Path('{0}:'.format(d)) for d in letters if os.path.exists('{0}:'.format(d))]
+            import win32api
+            drives = win32api.GetLogicalDriveStrings()
+            drives = drives.split('\000')[:-1]
+            for i in range(len(drives)):
+                drives[i] = Path(drives[i])
         else:
             return [Path.cwd().get_root()]
 
