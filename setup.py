@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
-setup(name='iofile',
-      version='1.0a.dev2',
+setup(name='pyiofile',
+      version='1.0a.dev3',
       description='Abstract representation of file and directory pathnames',
       long_description=open("README.rst").read(),
       classifiers=[
@@ -10,7 +10,7 @@ setup(name='iofile',
       ],
       keywords='funniest joke comedy flying circus',
       url='http://github.com/storborg/funniest',
-      author='frankdog',
+      author='frankdog-dev',
       packages=find_packages(),
       install_requires=[
           'markdown',

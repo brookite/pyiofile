@@ -6,7 +6,7 @@ import stat
 import platform
 import time
 
-__VERSION__ = "1.0a.dev2"
+__VERSION__ = "1.0a.dev3"
 
 
 class Path(os.PathLike):
