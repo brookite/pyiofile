@@ -66,6 +66,13 @@ class Path(os.PathLike):
         """
         return cls(os.path.expanduser("~"))
 
+    @classmethod
+    def home(cls):
+        """
+        Returns current user home directory path object
+        """
+        return cls(os.path.expanduser("~"))
+
     def __fspath__(self):
         return self.path
 
@@ -416,6 +423,12 @@ class Path(os.PathLike):
         """
         Returns the filesystem root.
         """
+        return Path(Path(self.get_absolute()).split()[0] + self.separator())
+
+    def splitdrive(self):
+        """
+        Analog to os.path.splitdrive
+        """
         return Path(os.path.splitdrive(self.get_absolute())[0])
 
     def get_relative(self):
@@ -482,7 +495,7 @@ class Path(os.PathLike):
             for i in range(len(drives)):
                 drives[i] = Path(drives[i])
         else:
-            return [Path.cwd().get_root()]
+            return [Path("/")]
 
     def __eq__(self, other):
         return os.path.samefile(self, other)
@@ -552,7 +565,7 @@ class Path(os.PathLike):
         Wrapper for standard-library class constructor tempfile.TemporaryFile
         """
         t = tempfile.TemporaryFile(*args, **kwargs)
-        return TemporaryPath(t)
+        return _TemporaryPath(t)
 
     @staticmethod
     def create_temp_dir(*args, **kwargs):
@@ -644,7 +657,7 @@ class Path(os.PathLike):
         return self.__path
 
 
-class TemporaryPath(Path):
+class _TemporaryPath(Path):
     """
     Temporary abstract pathnames representation
 
@@ -660,9 +673,6 @@ class TemporaryPath(Path):
     """
 
     def __init__(self, tmp):
-        if not isinstance(tmp, tempfile._TemporaryFileWrapper) and \
-                not isinstance(tmp, tempfile.TemporaryDirectory):
-            raise TypeError("Incorrect temporary path")
         self.__tmp = tmp
         self.__path = tmp.name
 

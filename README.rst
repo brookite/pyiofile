@@ -1,8 +1,8 @@
 =================
-iofile
+pyiofile
 =================
 
-iofile is a module for convenient work with paths as objects. iofile contains class Path - abstract representation of file and directory pathnames.
+pyiofile is a module for convenient work with paths as objects. pyiofile contains class Path - abstract representation of file and directory pathnames.
 Path uses standard-library modules like os, os.path, shutil, tempfile and combines their features in one class
 
 Features:
