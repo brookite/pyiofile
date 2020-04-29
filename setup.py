@@ -15,5 +15,6 @@ setup(name='pyiofile',
       install_requires=[
           'markdown',
       ],
+      py_modules=['pyiofile'],
       include_package_data=True,
       zip_safe=False)
