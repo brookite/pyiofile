@@ -471,7 +471,8 @@ class Path(os.PathLike):
                 self.set_readonly()
         else:
             if hidden:
-                self.rename("." + self.name)
+                if not self.name.startswith("."):
+                    self.rename("." + self.name)
             else:
                 if self.name.startswith("."):
                     self.rename(self.name[1:])
